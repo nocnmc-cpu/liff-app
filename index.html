@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LIFF Form</title>
-  <!-- นำเข้า LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; text-align: center; background-color: #f7f7f7; }
@@ -12,7 +11,6 @@
     input, button { width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; font-size: 16px; }
     input { border: 1px solid #ccc; border-radius: 5px; }
     button { background-color: #06C755; color: white; border: none; font-weight: bold; border-radius: 5px; cursor: pointer; }
-    button:hover { background-color: #05b34c; }
   </style>
 </head>
 <body>
@@ -20,15 +18,13 @@
   <div class="container">
     <h2>ส่งข้อความผ่าน LIFF</h2>
     <input type="text" id="userInput" placeholder="พิมพ์ข้อความที่ต้องการส่ง..." required>
-    <button type="button" onclick="submitData()">ส่งข้อมูล</button>
+    <button type="button" onclick="submitData()">ส่งข้อความเข้าแชท</button>
   </div>
 
   <script>
-    // ⚠️ [สำคัญ] นำ LIFF ID และ Google Apps Script Web App URL ของคุณมาใส่ตรงนี้
+    // ⚠️ ใส่ LIFF ID ของคุณที่นี่
     const LIFF_ID = "2012181427-IWrdgKMW"; 
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw6LX0yR0UrUqo__4tusugeg-08t2y3bNELak4uqZWoqSuWvMiRBapTc2TyfxodykQr/exec"; 
 
-    // เริ่มต้นการใช้งาน LIFF SDK
     async function main() {
       try {
         await liff.init({ liffId: LIFF_ID });
@@ -36,12 +32,11 @@
           liff.login();
         }
       } catch (error) {
-        console.error("LIFF Initialization failed", error);
+        alert("LIFF Init Error: " + error.message);
       }
     }
     main();
 
-    // ฟังก์ชันส่งข้อมูลเมื่อผู้ใช้กดปุ่ม
     async function submitData() {
       const inputText = document.getElementById("userInput").value;
       if (!inputText) {
@@ -50,29 +45,25 @@
       }
 
       try {
-        // ดึง Profile ของผู้ใช้งานที่กำลังเปิด LIFF
-        const profile = await liff.getProfile();
+        // ตรวจสอบว่าเปิดผ่านแอป LINE และรองรับการส่งข้อความไหม
+        if (!liff.isInClient()) {
+          alert("กรุณาเปิดผ่านแอปพลิเคชัน LINE เท่านั้น");
+          return;
+        }
 
-        // ส่งข้อมูลไปที่ Google Apps Script Web App
-        await fetch(WEB_APP_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            userId: profile.userId,
-            userName: profile.displayName,
-            message: inputText
-          })
-        });
+        // สั่งส่งข้อความเข้าแชทปัจจุบันทันที
+        await liff.sendMessages([
+          {
+            type: 'text',
+            text: inputText
+          }
+        ]);
 
-        alert("ส่งข้อมูลสำเร็จ! LINE OA จะส่งข้อความยืนยันกลับไปครับ");
-        liff.closeWindow(); // ปิดหน้าต่าง LIFF ทันที
+        alert("ส่งข้อความเข้าแชทสำเร็จ!");
+        liff.closeWindow(); // ปิดหน้า LIFF ทันที
 
-      } ccatch (error) {
-        console.error("Error:", error);
-        alert("Error ตัวจริงคือ: " + error.message);
+      } catch (error) {
+        alert("ส่งข้อความไม่สำเร็จ: " + error.message);
       }
     }
   </script>
