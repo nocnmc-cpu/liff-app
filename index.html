@@ -71,8 +71,9 @@
         liff.closeWindow(); // ปิดหน้าต่าง LIFF ทันที
 
       } catch (error) {
-  console.error("Error:", error);
-  alert("Error จริงๆ คือ: " + error.toString());
+      console.error("Error:", error);
+      // เปลี่ยนมาแสดง Error ตัวจริงตรงนี้
+      alert("Error ที่เจอคือ: " + error.message);
       }
     }
   </script>
